@@ -28,3 +28,15 @@ class DataCleaner:
             
         df.columns = new_columns
         return df
+
+    @staticmethod
+    def apply_dq_strategies(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Applies programmatic Data Quality decisions based on the strategy report:
+        - Drops the 'notes' column if it exists.
+        - Retains all other data as-is.
+        """
+        if 'notes' in df.columns:
+            df = df.drop(columns=['notes'])
+            
+        return df
