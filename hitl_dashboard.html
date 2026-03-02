@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Engineering - HITL Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text);
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            opacity: 0.7;
+            font-weight: 400;
+        }
+
+        td {
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-ready {
+            background: #10b981;
+        }
+
+        select,
+        input {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-run {
+            background: linear-gradient(45deg, #10b981, #3b82f6);
+        }
+
+        .row-hover:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Mock UI Logic Styles */
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            background: #10b981;
+            transform: translateX(200%);
+            transition: 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="notification">Approved changes recorded!</div>
+
+    <div class="container">
+        <header>
+            <div>
+                <h1>Data Transformation</h1>
+                <p style="opacity: 0.6;">Column Header Cleanup Dashboard</p>
+            </div>
+            <button class="btn btn-run" onclick="runPipeline()">🚀 Run Cleanup</button>
+        </header>
+
+        <div class="card" id="main-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Dataset</div>
+                    <div class="stat-value" id="dataset-name">raw_users.csv</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Rows</div>
+                    <div class="stat-value" id="row-count">5</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Actions</div>
+                    <div class="stat-value" id="action-count">1</div>
+                </div>
+            </div>
+
+            <h2>Proposed Transformations</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Target Column</th>
+                        <th>Description / Reason</th>
+                        <th>Proposed Action</th>
+                        <th>Approval</th>
+                    </tr>
+                </thead>
+                <tbody id="actions-table">
+                    <!-- Actions will be injected here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="output-area" style="display:none;" class="card">
+            <h2>Execution Results</h2>
+            <pre id="cli-output"
+                style="background:#000; padding:20px; border-radius:12px; font-family: monospace;"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration since we can't easily fetch local files from static HTML in some browsers
+        const mockPlan = {
+            "dataset_name": "raw_users.csv",
+            "total_rows": 5,
+            "transformations": [
+                {
+                    "type": "rename_columns",
+                    "column": "ALL",
+                    "description": "Normalize all column names to snake_case",
+                    "proposed_action": "rename",
+                    "options": ["rename", "keep_original"],
+                    "status": "pending_approval"
+                }
+            ]
+        };
+
+        function renderTable() {
+            const table = document.getElementById('actions-table');
+            table.innerHTML = '';
+
+            mockPlan.transformations.forEach((t, index) => {
+                const row = document.createElement('tr');
+                row.className = 'row-hover';
+
+                let optionsHtml = `<select onchange="updateAction(${index}, this.value)">`;
+                t.options.forEach(opt => {
+                    optionsHtml += `<option value="${opt}" ${opt === t.proposed_action ? 'selected' : ''}>${opt}</option>`;
+                });
+                optionsHtml += `</select>`;
+
+                row.innerHTML = `
+                    <td><code>${t.type}</code></td>
+                    <td><strong>${t.column}</strong></td>
+                    <td style="font-size: 0.9rem; opacity: 0.8;">${t.description}</td>
+                    <td>${optionsHtml}</td>
+                    <td>
+                        <input type="checkbox" checked onchange="updateStatus(${index}, this.checked)">
+                        <span class="status-badge status-ready">Ready</span>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function updateAction(index, value) {
+            mockPlan.transformations[index].proposed_action = value;
+            showNotification("Updated action to " + value);
+        }
+
+        function updateStatus(index, checked) {
+            mockPlan.transformations[index].status = checked ? "approved" : "rejected";
+            showNotification(checked ? "Approved transformation" : "Rejected transformation");
+        }
+
+        function showNotification(text) {
+            const el = document.getElementById('notification');
+            el.innerText = text;
+            el.style.transform = 'translateX(0)';
+            setTimeout(() => {
+                el.style.transform = 'translateX(200%)';
+            }, 2000);
+        }
+
+        function runPipeline() {
+            document.getElementById('main-content').style.opacity = '0.5';
+            document.getElementById('output-area').style.display = 'block';
+            const log = document.getElementById('cli-output');
+            log.innerHTML = "Initializing Data Transformation Tool...\n";
+
+            let i = 0;
+            const lines = [
+                "🚀 Starting execution of approved plan...",
+                "✅ Normalizing column names: SUCCESS",
+                "✨ Finalizing Silver Layer...",
+                "💾 Saved to data/processed/final_cleaned_raw_users.csv",
+                "🎉 PIPELINE COMPLETE!"
+            ];
+
+            const interval = setInterval(() => {
+                if (i < lines.length) {
+                    log.innerHTML += lines[i] + "\n";
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    document.getElementById('main-content').style.opacity = '1';
+                }
+            }, 600);
+        }
+
+        renderTable();
+    </script>
+</body>
+
+</html>
