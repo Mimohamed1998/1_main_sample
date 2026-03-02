@@ -1,0 +1,7 @@
+model_name: "random_forest_classifier"
+random_seed: 42
+eval_metric: "accuracy"
+hyperparameters:
+  learning_rate: 0.01
+  batch_size: 32
+  max_depth: 5

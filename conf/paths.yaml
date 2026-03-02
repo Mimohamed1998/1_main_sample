@@ -1,0 +1,4 @@
+raw_data: "data/raw"
+processed_data: "data/processed"
+model_dir: "models/saved"
+logs_dir: "logs"
